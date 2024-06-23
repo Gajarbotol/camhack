@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 import base64
 import re
 import os
@@ -38,6 +38,15 @@ def admin():
     image_files = os.listdir('static')
     image_files = [f'static/{file}' for file in image_files if file.endswith('.png')]
     return render_template('admin.html', images=image_files)
+
+# Endpoint to delete images
+@app.route('/delete/<path:filename>', methods=['POST'])
+def delete_image(filename):
+    try:
+        os.remove(filename)
+        return redirect(url_for('admin'))
+    except Exception as e:
+        return str(e), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
