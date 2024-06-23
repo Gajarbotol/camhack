@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Captured Photos</title>
+    <style>
+        body {
+            background-color: black;
+            color: green;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        #gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        #gallery div {
+            border: 2px solid green;
+            padding: 5px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Captured Photos</h1>
+    <div id="gallery">
+        {% for image in images %}
+            <div>
+                <img src="{{ image }}" alt="Captured Photo">
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
