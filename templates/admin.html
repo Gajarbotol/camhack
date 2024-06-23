@@ -20,17 +20,37 @@
             margin-bottom: 20px;
         }
         #gallery {
+            width: 80%;
+            max-width: 800px;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 10px;
         }
-        #gallery div {
+        .image-container {
+            display: flex;
+            align-items: center;
             border: 2px solid green;
-            padding: 5px;
+            padding: 10px;
+            position: relative;
         }
-        img {
-            max-width: 100%;
+        .image-container img {
+            max-width: 100px;
             height: auto;
+            margin-right: 20px;
+        }
+        .image-info {
+            flex-grow: 1;
+        }
+        .delete-button {
+            background-color: red;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            position: absolute;
+            right: 10px;
+            top: 10px;
         }
     </style>
 </head>
@@ -38,8 +58,14 @@
     <h1>Captured Photos</h1>
     <div id="gallery">
         {% for image in images %}
-            <div>
+            <div class="image-container">
                 <img src="{{ image }}" alt="Captured Photo">
+                <div class="image-info">
+                    <p>{{ image.split('/').pop() }}</p>
+                </div>
+                <form action="/delete/{{ image }}" method="post" onsubmit="return confirm('Are you sure you want to delete this image?');">
+                    <button type="submit" class="delete-button">Delete</button>
+                </form>
             </div>
         {% endfor %}
     </div>
