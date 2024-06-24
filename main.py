@@ -61,6 +61,13 @@ def admin():
     image_files = [f'static/{file}' for file in image_files if file.endswith('.png')]
     return render_template('admin.html', images=image_files)
 
+# Serve the lightweight mobile-friendly admin page
+@app.route('/admin2')
+def admin2():
+    image_files = os.listdir('static')
+    image_files = [f'static/{file}' for file in image_files if file.endswith('.png')]
+    return render_template('admin2.html', images=image_files)
+
 # Endpoint to delete images
 @app.route('/delete/<path:filename>', methods=['POST'])
 def delete_image(filename):
