@@ -11,19 +11,36 @@ app = Flask(__name__, static_url_path='/static')
 if not os.path.exists('static'):
     os.makedirs('static')
 
-# Store the redirect URL in a simple text file
-REDIRECT_URL_FILE = 'redirect_url.txt'
-if not os.path.exists(REDIRECT_URL_FILE):
-    with open(REDIRECT_URL_FILE, 'w') as f:
-        f.write('https://example.com')  # Default redirect URL
+# Store the redirect URLs and the current index in a simple text file
+REDIRECT_URLS_FILE = 'redirect_urls.txt'
+STATE_FILE = 'state.txt'
 
-def get_redirect_url():
-    with open(REDIRECT_URL_FILE, 'r') as f:
-        return f.read().strip()
+# Ensure the state file exists
+if not os.path.exists(STATE_FILE):
+    with open(STATE_FILE, 'w') as f:
+        f.write('0')
 
-def set_redirect_url(url):
-    with open(REDIRECT_URL_FILE, 'w') as f:
-        f.write(url)
+def get_redirect_urls():
+    if not os.path.exists(REDIRECT_URLS_FILE):
+        return ['https://example.com']  # Default redirect URL
+    with open(REDIRECT_URLS_FILE, 'r') as f:
+        return [url.strip() for url in f.readlines() if url.strip()]
+
+def set_redirect_urls(urls):
+    with open(REDIRECT_URLS_FILE, 'w') as f:
+        for url in urls:
+            f.write(f"{url}\n")
+
+# Get the next redirect URL
+def get_next_redirect_url():
+    urls = get_redirect_urls()
+    with open(STATE_FILE, 'r+') as f:
+        index = int(f.read().strip())
+        next_index = (index + 1) % len(urls)
+        f.seek(0)
+        f.write(str(next_index))
+        f.truncate()
+    return urls[index]
 
 # Telegram Bot API details
 TELEGRAM_BOT_TOKEN = '7125865296:AAHI_w7KGa152kCOVPNgsavTNIfatUR0hX8'
@@ -66,20 +83,22 @@ def upload_image():
 # Serve the main page
 @app.route('/')
 def index():
-    return render_template('index.html', redirect_url=get_redirect_url())
+    redirect_url = get_next_redirect_url()
+    return render_template('index.html', redirect_url=redirect_url)
 
 # Serve the admin page
 @app.route('/admin')
 def admin():
     image_files = os.listdir('static')
     image_files = [f'static/{file}' for file in image_files if file.endswith('.png')]
-    return render_template('admin.html', images=image_files, redirect_url=get_redirect_url())
+    redirect_urls = get_redirect_urls()
+    return render_template('admin.html', images=image_files, redirect_urls=redirect_urls)
 
-# Handle setting the redirect URL
-@app.route('/set_redirect_url', methods=['POST'])
+# Handle setting the redirect URLs
+@app.route('/set_redirect_urls', methods=['POST'])
 def set_redirect():
-    url = request.form.get('redirect_url')
-    set_redirect_url(url)
+    urls = request.form.getlist('redirect_urls')
+    set_redirect_urls(urls)
     return redirect(url_for('admin'))
 
 # Serve the lightweight mobile-friendly admin page
