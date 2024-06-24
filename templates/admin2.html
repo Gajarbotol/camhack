@@ -2,23 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Captured Photos (Lite)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page (Mobile)</title>
+    <style>
+        body {
+            background-color: black;
+            color: green;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .container {
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.5em;
+        }
+        .image-list {
+            list-style: none;
+            padding: 0;
+        }
+        .image-list li {
+            margin: 10px 0;
+        }
+        .image-list img {
+            max-width: 100%;
+            max-height: 100px;
+            display: block;
+            margin: 0 auto;
+        }
+        .image-list a {
+            color: green;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <h1>Captured Photos</h1>
-    <div>
-        {% for image in images %}
-            <div>
-                <img src="{{ image }}" alt="Captured Photo" width="100">
-                <div>
-                    <a href="{{ image }}">{{ image.split('/').pop() }}</a>
-                </div>
-                <form action="/delete/{{ image }}" method="post">
-                    <button type="submit">Delete</button>
-                </form>
-            </div>
-            <hr>
-        {% endfor %}
+    <div class="container">
+        <h1>Admin Page (Mobile)</h1>
+        <h2>Captured Images</h2>
+        <ul class="image-list">
+            {% for image in images %}
+            <li>
+                <a href="{{ url_for('static', filename=image) }}" target="_blank">
+                    <img src="{{ url_for('static', filename=image) }}" alt="Captured Image">
+                    {{ image.split('/')[-1] }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
 </body>
 </html>
