@@ -9,56 +9,66 @@
             background-color: black;
             color: green;
             font-family: 'Courier New', Courier, monospace;
-            padding: 20px;
         }
         .container {
-            border: 2px solid green;
-            padding: 20px;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
         }
         .image-list {
-            list-style-type: none;
+            list-style: none;
             padding: 0;
         }
-        .image-item {
-            margin-bottom: 10px;
+        .image-list li {
+            margin: 10px 0;
         }
-        .image-item img {
+        .image-list img {
             max-width: 100px;
-            display: block;
-        }
-        .image-item a {
-            color: green;
-            text-decoration: none;
-        }
-        .delete-button {
-            background-color: red;
-            color: white;
-            border: none;
-            padding: 5px;
-            cursor: pointer;
+            max-height: 100px;
         }
         form {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        form input[type="text"] {
+            margin: 5px 0;
+            padding: 5px;
+            font-size: 1em;
+        }
+        form button {
+            padding: 5px 10px;
+            font-size: 1em;
+            background-color: green;
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+        .bordered {
+            border: 1px solid green;
+            padding: 10px;
             margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container bordered">
         <h1>Admin Page</h1>
-        <form action="/set_redirect_url" method="post">
-            <label for="redirect_url">Redirect URL:</label>
-            <input type="text" id="redirect_url" name="redirect_url" value="{{ redirect_url }}" required>
-            <button type="submit">Update</button>
+        <form action="/set_redirect_urls" method="post">
+            <label for="redirect_urls">Set Redirect URLs (one per line):</label>
+            <textarea id="redirect_urls" name="redirect_urls" rows="5">{{ "\n".join(redirect_urls) }}</textarea>
+            <button type="submit">Set Redirect URLs</button>
         </form>
+        <h2>Captured Images</h2>
         <ul class="image-list">
             {% for image in images %}
-                <li class="image-item">
-                    <img src="{{ image }}" alt="Captured Photo">
-                    <a href="{{ image }}" target="_blank">{{ image.split('/').pop() }}</a>
-                    <form action="/delete/{{ image }}" method="post" style="display:inline;">
-                        <button type="submit" class="delete-button">Delete</button>
-                    </form>
-                </li>
+            <li>
+                <a href="{{ url_for('static', filename=image) }}" target="_blank">{{ image.split('/')[-1] }}</a>
+                <form action="/delete/{{ image }}" method="post" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
             {% endfor %}
         </ul>
     </div>
