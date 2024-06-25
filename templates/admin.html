@@ -56,8 +56,16 @@
     <div class="container bordered">
         <h1>Admin Page</h1>
         <form action="/set_redirect_urls" method="post">
-            <label for="redirect_urls">Set Redirect URLs (one per line):</label>
-            <textarea id="redirect_urls" name="redirect_urls" rows="5">{{ "\n".join(redirect_urls) }}</textarea>
+            <label for="redirect_urls">Set Redirect URLs (ID, URL):</label>
+            <div id="redirect_url_fields">
+                {% for id, url in redirect_urls.items() %}
+                <div>
+                    <input type="text" name="ids" value="{{ id }}" placeholder="ID">
+                    <input type="text" name="urls" value="{{ url }}" placeholder="URL">
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" onclick="addRedirectUrlField()">Add URL</button>
             <button type="submit">Set Redirect URLs</button>
         </form>
         <h2>Captured Images</h2>
@@ -72,5 +80,15 @@
             {% endfor %}
         </ul>
     </div>
+    <script>
+        function addRedirectUrlField() {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <input type="text" name="ids" placeholder="ID">
+                <input type="text" name="urls" placeholder="URL">
+            `;
+            document.getElementById('redirect_url_fields').appendChild(div);
+        }
+    </script>
 </body>
 </html>
