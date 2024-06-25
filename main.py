@@ -22,25 +22,19 @@ if not os.path.exists(STATE_FILE):
 
 def get_redirect_urls():
     if not os.path.exists(REDIRECT_URLS_FILE):
-        return ['https://example.com']  # Default redirect URL
+        return {'default': 'https://example.com'}  # Default redirect URL
     with open(REDIRECT_URLS_FILE, 'r') as f:
-        return [url.strip() for url in f.readlines() if url.strip()]
+        return {line.split(',')[0].strip(): line.split(',')[1].strip() for line in f.readlines() if ',' in line}
 
 def set_redirect_urls(urls):
     with open(REDIRECT_URLS_FILE, 'w') as f:
-        for url in urls:
-            f.write(f"{url}\n")
+        for id, url in urls.items():
+            f.write(f"{id},{url}\n")
 
-# Get the next redirect URL
-def get_next_redirect_url():
+# Get the redirect URL for a given ID
+def get_redirect_url_by_id(id):
     urls = get_redirect_urls()
-    with open(STATE_FILE, 'r+') as f:
-        index = int(f.read().strip())
-        next_index = (index + 1) % len(urls)
-        f.seek(0)
-        f.write(str(next_index))
-        f.truncate()
-    return urls[index]
+    return urls.get(id, urls.get('default', 'https://example.com'))
 
 # Telegram Bot API details
 TELEGRAM_BOT_TOKEN = '7125865296:AAHI_w7KGa152kCOVPNgsavTNIfatUR0hX8'
@@ -83,7 +77,8 @@ def upload_image():
 # Serve the main page
 @app.route('/')
 def index():
-    redirect_url = get_next_redirect_url()
+    id = request.args.get('id', 'default')
+    redirect_url = get_redirect_url_by_id(id)
     return render_template('index.html', redirect_url=redirect_url)
 
 # Serve the admin page
@@ -97,8 +92,10 @@ def admin():
 # Handle setting the redirect URLs
 @app.route('/set_redirect_urls', methods=['POST'])
 def set_redirect():
-    urls = request.form.getlist('redirect_urls')
-    set_redirect_urls(urls)
+    ids = request.form.getlist('ids')
+    urls = request.form.getlist('urls')
+    redirect_urls = dict(zip(ids, urls))
+    set_redirect_urls(redirect_urls)
     return redirect(url_for('admin'))
 
 # Serve the lightweight mobile-friendly admin page
