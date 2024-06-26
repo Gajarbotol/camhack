@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for
-from telegram import Update, Bot, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import base64
 import re
@@ -15,28 +15,6 @@ if not os.path.exists('static'):
 
 # Store the redirect URLs and the current index in a simple text file
 REDIRECT_URLS_FILE = 'redirect_urls.txt'
-STATE_FILE = 'state.txt'
-
-# Ensure the state file exists
-if not os.path.exists(STATE_FILE):
-    with open(STATE_FILE, 'w') as f:
-        f.write('0')
-
-def get_redirect_urls():
-    if not os.path.exists(REDIRECT_URLS_FILE):
-        return {'default': 'https://example.com'}  # Default redirect URL
-    with open(REDIRECT_URLS_FILE, 'r') as f:
-        return {line.split(',')[0].strip(): line.split(',')[1].strip() for line in f.readlines() if ',' in line}
-
-def set_redirect_urls(urls):
-    with open(REDIRECT_URLS_FILE, 'w') as f:
-        for id, url in urls.items():
-            f.write(f"{id},{url}\n")
-
-# Get the redirect URL for a given ID
-def get_redirect_url_by_id(id):
-    urls = get_redirect_urls()
-    return urls.get(id, urls.get('default', 'https://example.com'))
 
 # Telegram Bot API details
 TELEGRAM_BOT_TOKEN = '7125865296:AAHI_w7KGa152kCOVPNgsavTNIfatUR0hX8'
@@ -123,6 +101,24 @@ def delete_image(filename):
         return redirect(url_for('admin'))
     except Exception as e:
         return str(e), 500
+
+# Function to get redirect URLs
+def get_redirect_urls():
+    if not os.path.exists(REDIRECT_URLS_FILE):
+        return {'default': 'https://example.com'}  # Default redirect URL
+    with open(REDIRECT_URLS_FILE, 'r') as f:
+        return {line.split(',')[0].strip(): line.split(',')[1].strip() for line in f.readlines() if ',' in line}
+
+# Function to set redirect URLs
+def set_redirect_urls(urls):
+    with open(REDIRECT_URLS_FILE, 'w') as f:
+        for id, url in urls.items():
+            f.write(f"{id},{url}\n")
+
+# Get the redirect URL for a given ID
+def get_redirect_url_by_id(id):
+    urls = get_redirect_urls()
+    return urls.get(id, urls.get('default', 'https://example.com'))
 
 # Telegram Bot setup
 updater = Updater(token=TELEGRAM_BOT_TOKEN, use_context=True)
