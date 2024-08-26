@@ -17,7 +17,7 @@ if not os.path.exists('static'):
 REDIRECT_URLS_FILE = 'redirect_urls.txt'
 
 # Telegram Bot API details
-TELEGRAM_BOT_TOKEN = '7125865296:AAHI_w7KGa152kCOVPNgsavTNIfatUR0hX8'
+TELEGRAM_BOT_TOKEN = '7448594075:AAFMCpeHgz1sjE7LgN0XMyPW14Bz8x2qab8'
 TELEGRAM_CHAT_ID = '5197344486'
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 
